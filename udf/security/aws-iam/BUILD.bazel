@@ -1,0 +1,48 @@
+java_binary(
+    name = "udf",
+    create_executable = False,
+    runtime_deps = [":java_default_library"],
+)
+
+java_library(
+    name = "java_default_library",
+    srcs = glob(["src/main/java/**/*.java"]),
+    deps = [
+        "@uarlos//:com_google_code_gson_gson",
+    ],
+)
+
+java_library(
+    name = "java_test_library",
+    srcs = glob(["src/test/java/**/*.java"]),
+    resource_strip_prefix = "aws-iam/src/test/resources",
+    resources = glob(["src/test/resources/**"]),
+    deps = [
+        ":java_default_library",
+        "@uarlos//:org_testng_testng_7_5",
+    ],
+)
+
+java_test(
+    name = "udf_test",
+    args = [
+        "-testjar",
+        "aws-iam/libjava_test_library.jar",
+        "-verbose",
+        "2",
+    ],
+    main_class = "org.testng.TestNG",
+    use_testrunner = False,
+    runtime_deps = [
+        ":java_test_library",
+        "@uarlos//:org_slf4j_slf4j_api_1_7_32",
+        "@uarlos//:org_slf4j_slf4j_simple_1_7_32",
+        "@uarlos//:org_testng_testng_7_5",
+    ],
+)
+
+sh_binary(
+    name = "install",
+    srcs = ["install.sh"],
+    data = [":udf_deploy.jar"],
+)
